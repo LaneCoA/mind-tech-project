@@ -1,0 +1,41 @@
+@import "tailwindcss";
+
+/*:root {
+  --background: #ffffff;
+  --foreground: #171717;
+}*/
+:root {
+  --background: #f9fafb;   /* gray-50 */
+  --foreground: #111827;   /* gray-900 */
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+}
+
+/*@media (prefers-color-scheme: dark) {
+  :root {
+    --background: #0a0a0a;
+    --foreground: #ededed;
+  }
+}*/
+
+body { background: var(--background); color: var(--foreground); font-family: Arial, Helvetica, sans-serif; }
+
+.watermark {
+  position: fixed;
+  inset: 0;
+  background: url('/arkuslogo.png') center no-repeat;
+  background-size: 420px;
+  opacity: 0.08;
+  pointer-events: none;
+  z-index: 0;
+}
+main, body > div:not(.watermark) {
+  position: relative;
+  z-index: 1;
+}
+
