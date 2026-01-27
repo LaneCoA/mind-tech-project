@@ -1,3 +1,8 @@
+type Row = {
+  required_skills?: string | string[] | null
+  created_at: string
+}
+
 export function countRequiredSkillsByTimestamp(data: Row[]) {
   const timestampSkillsMap = new Map<string, Set<string>>()
 
