@@ -12,8 +12,11 @@ type Employee = {
   id: string
   fullName: string
   seniority: string | null
-  skills: string[]
+  skills: string[] 
   yearsOfExperience: number | null
+  position: string | null
+  location: string | null
+  cv_link: string | null
 }
 
 const SENIORITY_OPTIONS = ['Junior', 'Mid', 'Senior', 'Lead']
@@ -47,7 +50,7 @@ export default function EmployeesPage() {
     const { data, error } = await supabase
       .from('employees')
       .select(
-        'id, fullName, seniority, skills, yearsOfExperience'
+        'id, fullName, seniority, skills, yearsOfExperience, position, location, cv_link'
       )
       .is('deleted_at', null)
       .order('created_at', { ascending: false })
@@ -61,7 +64,7 @@ export default function EmployeesPage() {
     setEmployees(
       (data ?? []).map(e => ({
         ...e,
-        skills: Array.isArray(e.skills) ? e.skills : [],
+        skills: normalizeSkills(e.skills),
       }))
     )
 
@@ -266,6 +269,7 @@ export default function EmployeesPage() {
       {showAdd && (
         <Modal onClose={() => setShowAdd(false)}>
           <CandidateForm
+          key="add"
             onSuccess={() => {
               setShowAdd(false)
               loadEmployees()
@@ -278,6 +282,7 @@ export default function EmployeesPage() {
       {editing && (
         <Modal onClose={() => setEditing(null)}>
           <CandidateForm
+            key={editing.id}
             initialData={editing}
             onSuccess={() => {
               setEditing(null)
@@ -329,7 +334,20 @@ export default function EmployeesPage() {
     </div>
   )
 }
+function normalizeSkills(skills: unknown): string[] {
+  if (Array.isArray(skills)) {
+    return skills.filter((s): s is string => typeof s === 'string');
+  }
 
+  if (typeof skills === 'string') {
+    return skills
+      .split(',')
+      .map((s) => s.trim())
+      .filter(Boolean);
+  }
+
+  return [];
+}
 /* ================= COMPONENTS ================= */
 
 function EmployeeCard({
@@ -341,33 +359,73 @@ function EmployeeCard({
   onEdit: () => void
   onDelete: () => void
 }) {
+  const skills = normalizeSkills(employee.skills)
+
   return (
     <div className="bg-white rounded-xl shadow p-5 flex justify-between items-center">
-      <div>
+      <div className="space-y-1">
         <p className="font-semibold text-sm">
           {employee.fullName}
+        </p>
+        <p className="text-sm text-gray-600 font-medium">
+          {employee.position ?? '-'}
         </p>
 
         <p className="text-xs text-gray-500">
           {employee.seniority ?? '—'} ·{' '}
-          {employee.yearsOfExperience ?? 0} yrs
+          {employee.yearsOfExperience ?? 0} yrs ·{' '}
+          {employee.location ?? '—'}
+        </p>
+
+        {/* CV LINK */}
+        {employee.cv_link && (
+          <div className="mt-2">
+            <a
+              href={employee.cv_link}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-1 rounded-full
+                 bg-indigo-100 px-2 py-0.5 text-xs font-medium
+                 text-indigo-700 hover:bg-indigo-200"
+            >
+               🔗 CV link
+            </a>
+          </div>
+        )}
+        <p className="text-xs font-semibold text-gray-500">
+          {"Skills"}
         </p>
 
         <div className="flex flex-wrap gap-1 mt-1">
-          {employee.skills.map(skill => (
-            <span
-              key={skill}
-              className="text-xs px-2 py-0.5 rounded-full bg-indigo-50 text-indigo-600"
-            >
-              {skill}
-            </span>
-          ))}
+          {employee.skills
+            .flatMap((skill: string) =>
+              skill
+                .split(',')
+                .map(s => s.trim())
+                .filter(Boolean)
+            )
+            .map(skill => (
+              <span
+                key={skill}
+                className="text-xs px-2 py-0.5 rounded-full bg-indigo-50 text-indigo-600"
+              >
+                {skill}
+              </span>
+            ))}
         </div>
       </div>
 
       <div className="flex gap-3 text-lg">
-        <button onClick={onEdit}>✏️</button>
-        <button onClick={onDelete}>🗑</button>
+        <button onClick={onEdit}
+          className="hover:text-indigo-600"
+          title="Edit"
+          >✏️
+        </button>
+        <button onClick={onDelete}
+          className="hover:text-red-600"
+          title="Delete"
+          >🗑
+        </button>
       </div>
     </div>
   )

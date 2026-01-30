@@ -3,6 +3,24 @@ type Row = {
   created_at: string
 }
 
+/**
+ * Normaliza seniority para evitar variantes:
+ * "Tech Lead", "lead engineer" → "Lead"
+ * "senior", "Senior Dev" → "Senior"
+ * etc.
+ */
+function normalizeSeniority(raw: string): string {
+  const s = raw.toLowerCase()
+
+  if (s.includes('lead')) return 'Lead'
+  if (s.includes('senior')) return 'Senior'
+  if (s.includes('mid')) return 'Mid'
+  if (s.includes('junior') || s.includes('jr')) return 'Junior'
+
+  // fallback: capitaliza
+  return raw.charAt(0).toUpperCase() + raw.slice(1)
+}
+
 export function countRequiredSeniorityByTimestamp(data: Row[]) {
   const timestampSeniorityMap = new Map<string, Set<string>>()
 
@@ -15,29 +33,26 @@ export function countRequiredSeniorityByTimestamp(data: Row[]) {
     if (Array.isArray(row.required_seniority)) {
       seniorityArray = row.required_seniority
     }
-    // Caso 2: es string
+    // Caso 2: string
     else if (typeof row.required_seniority === 'string') {
       const trimmed = row.required_seniority.trim()
+
       if (trimmed.startsWith('[') && trimmed.endsWith(']')) {
         // Intentamos parsear JSON
         try {
           const parsed = JSON.parse(trimmed)
           if (Array.isArray(parsed)) seniorityArray = parsed
         } catch {
-          // Si falla JSON, lo tratamos como valor único
           seniorityArray = [trimmed]
         }
       } else {
-        // Texto simple: "Junior", "Mid", etc.
         seniorityArray = [trimmed]
       }
-    }
-    // Otros tipos los ignoramos
-    else {
+    } else {
       return
     }
 
-    // Limpieza: solo strings no vacíos
+    // Limpieza básica
     const seniorities = seniorityArray
       .filter(s => typeof s === 'string')
       .map(s => s.trim())
@@ -45,7 +60,7 @@ export function countRequiredSeniorityByTimestamp(data: Row[]) {
 
     if (seniorities.length === 0) return
 
-    // Timestamp
+    // Timestamp normalizado
     const date = new Date(row.created_at)
     if (isNaN(date.getTime())) return
 
@@ -55,16 +70,22 @@ export function countRequiredSeniorityByTimestamp(data: Row[]) {
       timestampSeniorityMap.set(ts, new Set())
     }
 
+    // 👇 NORMALIZACIÓN AQUÍ
     seniorities.forEach(seniority => {
-      timestampSeniorityMap.get(ts)!.add(seniority)
+      const normalized = normalizeSeniority(seniority)
+      timestampSeniorityMap.get(ts)!.add(normalized)
     })
   })
 
-  // Contamos frecuencia total
+  // Conteo final por seniority
   const seniorityCountMap = new Map<string, number>()
+
   timestampSeniorityMap.forEach(set => {
     set.forEach(seniority => {
-      seniorityCountMap.set(seniority, (seniorityCountMap.get(seniority) || 0) + 1)
+      seniorityCountMap.set(
+        seniority,
+        (seniorityCountMap.get(seniority) || 0) + 1
+      )
     })
   })
 
@@ -77,4 +98,5 @@ export function countRequiredSeniorityByTimestamp(data: Row[]) {
     totalTimestamps: timestampSeniorityMap.size,
   }
 }
+
 

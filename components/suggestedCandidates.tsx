@@ -20,11 +20,99 @@ function formatDate(date: string) {
   })
 }
 
-function highlightCandidateNames(text: string) {
-  return text.replace(
-    /(Nombre:\s*)(.+)/gi,
-    '$1<strong>$2</strong>'
+function formatCandidateText(text: string) {
+  if (!text) return ''
+
+  // 1️⃣ Normalizar saltos de línea
+  let result = text
+    .replace(/\n{3,}/g, '\n\n')
+    .trim()
+
+  // 2️⃣ Separar candidatos (antes de "Nombre completo")
+  result = result.replace(
+    /\n(?=Nombre(?:\s+completo)?\s*:)/gi,
+    '\n---CANDIDATE---\n'
   )
+
+  const candidates = result.split('---CANDIDATE---')
+
+  return candidates
+    .map(candidate => {
+      let c = candidate.trim()
+
+      // 🔹 Nombre → título
+      c = c.replace(
+        /Nombre(?:\s+completo)?\s*:\s*([^\n]+)/gi,
+        `<div style="font-size:15px;font-weight:600;color:#111827;margin-bottom:4px">$1</div>`
+      )
+
+      // 🔹 Meta info
+      c = c.replace(
+        /(Seniority:\s*[^\n]+|Años de experiencia:\s*[^\n]+|Roles:\s*[^\n]+)/gi,
+        `<div style="font-size:12px;color:#6b7280">$1</div>`
+      )
+
+      // 🔹 Skills → pills
+      c = c.replace(
+        /Habilidades:\s*([^\n]+)/gi,
+        (_, skills) => {
+          const pills = skills
+            .split(',')
+            .map(
+              (s: string) =>
+                `<span style="
+                  display:inline-block;
+                  margin:2px 4px 0 0;
+                  padding:2px 8px;
+                  font-size:11px;
+                  border-radius:9999px;
+                  background:#eef2ff;
+                  color:#4338ca;
+                ">${s.trim()}</span>`
+            )
+            .join('')
+
+          return `<div style="margin-top:6px">${pills}</div>`
+        }
+      )
+
+      // 🔹 Link CV → botón
+      c = c.replace(
+        /(Link\s*CV|CV\s*Link)\s*:\s*(?:\n\s*)?(https?:\/\/[^\s\n]+)/gi,
+        `<div style="margin-top:8px">
+          <a href="$2" target="_blank" rel="noopener noreferrer"
+            style="
+              display:inline-flex;
+              align-items:center;
+              gap:4px;
+              margin-top:6px;
+              font-size:12px;
+              font-weight:500;
+              color:#4f46e5;
+              text-decoration:none;
+            ">
+            📄 Ver CV
+          </a>
+        </div>`
+      )
+
+      // 🔹 Quitar "Link CV:" vacío
+      c = c.replace(/Link CV:\s*\n?/gi, '')
+
+      // 🔹 Envolver cada candidato en una card visual
+      return `
+        <div style="
+          padding:12px;
+          border-radius:8px;
+          background:#ffffff;
+          border:1px solid #e5e7eb;
+          margin-bottom:12px;
+        ">
+          ${c}
+        </div>
+      `
+    })
+    .join('')
 }
 
 function RequesterBadge({ requester }: { requester: string | null }) {
@@ -77,13 +165,13 @@ function ExpandableText({
   return (
     <>
       <div className="rounded-lg border bg-gray-50 p-4">
-        <p
+        <div
           ref={textRef}
-          className={`whitespace-pre-line text-sm text-gray-700 leading-relaxed
-            ${!isExpanded ? 'line-clamp-8' : ''}
+          className={`text-sm text-gray-700 leading-relaxed
+            ${!isExpanded ? 'line-clamp-9' : ''}
           `}
           dangerouslySetInnerHTML={{
-            __html: highlightCandidateNames(text),
+            __html: formatCandidateText(text),
           }}
         />
       </div>

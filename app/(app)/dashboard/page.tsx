@@ -41,6 +41,10 @@ export default async function MetricsPage() {
     ...requiredSkillsEvents.skillsByFrequency.map(s => s.count),
     1
   )
+  const maxSeniorityCount = Math.max(
+  ...requiredSeniorityEvents.seniorityByFrequency.map(e => e.count),
+  1
+)
 
   return (
     <div className="min-h-screen bg-gray-50 pb-24">
@@ -134,7 +138,7 @@ export default async function MetricsPage() {
             {requiredSeniorityEvents.seniorityByFrequency.map(
               ({ seniority, count }) => {
                 const percent = Math.round(
-                  (count / maxSkillCount) * 100
+                  (count / maxSeniorityCount) * 100
                 )
 
                 return (
