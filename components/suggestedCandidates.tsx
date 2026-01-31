@@ -52,6 +52,12 @@ function formatCandidateText(text: string) {
         `<div style="font-size:12px;color:#6b7280">$1</div>`
       )
 
+      // 🔹 Ubicación → línea separada
+      c = c.replace(
+        /(Ubicación|Location)\s*:\s*([^\n]+)/gi,
+        `<div style="font-size:12px;color:#6b7280;margin-top:2px">$1: $2</div>`
+      )
+
       // 🔹 Skills → pills
       c = c.replace(
         /Habilidades:\s*([^\n]+)/gi,
