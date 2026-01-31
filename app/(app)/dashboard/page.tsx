@@ -1,3 +1,5 @@
+export const dynamic = 'force-dynamic'
+
 import { supabase } from '@/lib/supabase'
 import { countRequiredSkillsByTimestamp } from '@/lib/countRequiredSkillsByTimestamp'
 import { countRequiredSeniorityByTimestamp } from '@/lib/countRequiredSeniorityByTimestamp'
