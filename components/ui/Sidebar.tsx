@@ -7,7 +7,8 @@ import {
   Home,
   Users,
   ShieldCheck,
-  LogOut
+  LogOut,
+  Folder
 } from 'lucide-react'
 import type { BottomNavItem } from '@/config/bottomNav'
 
@@ -16,6 +17,7 @@ const iconMap = {
   users: Users,
   shield: ShieldCheck,
   logout: LogOut,
+  folder: Folder
 }
 
 export default function Sidebar({

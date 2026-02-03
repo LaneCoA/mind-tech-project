@@ -74,7 +74,7 @@ export default function Chat() {
         {messages.map((m, i) => (
           <div
             key={i}
-            className={`rounded-xl p-3 text-sm max-w-[85%] ${
+            className={`rounded-xl p-3 text-sm w-full ${
               m.role === 'bot'
                 ? 'bg-gray-100 text-gray-800'
                 : 'bg-indigo-600 text-white self-end text-right'
@@ -89,7 +89,7 @@ export default function Chat() {
 
         {/* Typing indicator */}
         {isSending && (
-          <div className="rounded-xl p-3 text-sm max-w-[85%] bg-gray-100 text-gray-800">
+          <div className="rounded-xl p-3 text-sm w-full bg-gray-100 text-gray-800">
             <p className="text-xs opacity-70 mb-1">AI Assistant</p>
             <TypingIndicator />
           </div>
