@@ -1,9 +1,16 @@
 export async function POST() {
+    if (!process.env.N8N_DRIVE_WEBHOOK) {
+    console.error('❌ Missing N8N_DRIVE_WEBHOOK')
+    return Response.json(
+      { error: 'Missing N8N_DRIVE_WEBHOOK' },
+      { status: 500 }
+    )
+  }
   const res = await fetch(process.env.N8N_DRIVE_WEBHOOK!, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
-      'Authorization': `Bearer ${process.env.N8N_API_KEY}`,
+      //'Authorization': `Bearer ${process.env.N8N_API_KEY}`,
     },
     body: JSON.stringify({
       source: 'google-drive',

@@ -83,6 +83,7 @@ export async function POST(req: NextRequest) {
       requestBody: {
         name: file.name,
         parents: [process.env.GOOGLE_DRIVE_FOLDER_ID],
+        mimeType: 'application/vnd.google-apps.document',
       },
       media: {
         mimeType,
