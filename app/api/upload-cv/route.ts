@@ -47,24 +47,31 @@ export async function POST(req: NextRequest) {
     });
 
     if (
-      !process.env.GOOGLE_CLIENT_EMAIL ||
-      !process.env.GOOGLE_PRIVATE_KEY ||
+      !process.env.GOOGLE_CLIENT_ID ||
+      !process.env.GOOGLE_CLIENT_SECRET ||
+      !process.env.GOOGLE_REFRESH_TOKEN ||
       !process.env.GOOGLE_DRIVE_FOLDER_ID
     ) {
-      return Response.json(
-        { error: 'Missing Google Drive env vars' },
-        { status: 500 }
-      );
-    }
+    return Response.json(
+    { error: 'Missing Google OAuth env vars' },
+    { status: 500 }
+    );
+  }
 
     // 🔐 Google Auth
-    const auth = new google.auth.JWT({
-      email: process.env.GOOGLE_CLIENT_EMAIL,
-      key: process.env.GOOGLE_PRIVATE_KEY.replace(/\\n/g, '\n'),
-      scopes: ['https://www.googleapis.com/auth/drive'],
+    const oauth2Client = new google.auth.OAuth2(
+    process.env.GOOGLE_CLIENT_ID,
+    process.env.GOOGLE_CLIENT_SECRET
+    );
+
+    oauth2Client.setCredentials({
+      refresh_token: process.env.GOOGLE_REFRESH_TOKEN,
     });
 
-    const drive = google.drive({ version: 'v3', auth });
+    const drive = google.drive({
+      version: "v3",
+      auth: oauth2Client,
+    });
 
     // 📦 File → stream
     const buffer = Buffer.from(await file.arrayBuffer());
@@ -76,7 +83,6 @@ export async function POST(req: NextRequest) {
       requestBody: {
         name: file.name,
         parents: [process.env.GOOGLE_DRIVE_FOLDER_ID],
-        mimeType,
       },
       media: {
         mimeType,

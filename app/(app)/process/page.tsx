@@ -7,6 +7,7 @@ export default function DocumentIngestPage() {
   const [loading, setLoading] = useState(false)
   const [uploading, setUploading] = useState(false)
   const [status, setStatus] = useState<'idle' | 'ok' | 'error'>('idle')
+  const [fileName, setFileName] = useState('No file chosen')
   const [uploadStatus, setUploadStatus] = useState<
     'idle' | 'ok' | 'error'
   >('idle')
@@ -18,6 +19,7 @@ export default function DocumentIngestPage() {
     const file = e.target.files?.[0]
     if (!file) return
 
+    setFileName(file.name)
     setUploading(true)
     setUploadStatus('idle')
 
@@ -107,21 +109,42 @@ export default function DocumentIngestPage() {
               id="manual-upload"
               className="hidden"
               onChange={handleUpload}
+              disabled={uploading}
             />
 
-            {/* Botón */}
             <label
-              htmlFor="manual-upload"
-              className="cursor-pointer rounded-xl bg-indigo-600 px-4 py-2 text-sm text-white hover:bg-indigo-700"
+            htmlFor="manual-upload"
+              className={`cursor-pointer rounded-xl px-4 py-2 text-sm text-white
+              ${uploading
+                ? 'bg-gray-400 cursor-not-allowed'
+                : 'bg-indigo-600 hover:bg-indigo-700'
+              }`}
               >
-              Upload file
+              {uploading ? 'Uploading…' : 'Upload file'}
             </label>
 
-            {/* Texto */}
             <span className="text-sm text-gray-500">
-              No file chosen
+              {fileName}
             </span>
           </div>
+
+          {uploading && (
+            <p className="mt-3 text-sm text-blue-600">
+              ⏳ Uploading file to Google Drive…
+            </p>
+          )}
+
+          {uploadStatus === 'ok' && (
+            <p className="mt-3 text-sm text-green-600">
+            ✅ File uploaded successfully
+            </p>
+          )}
+
+          {uploadStatus === 'error' && (
+            <p className="mt-3 text-sm text-red-600">
+            ❌ Upload failed, please try again
+          </p>
+          )}
         </SectionCard>
       </div>
     </div>
